@@ -9,6 +9,8 @@ app.get('/', function(req, res) {
     res.sendfile('chat.html');
 });
 
+
+
 http.listen(3000, function() {
     console.log('listening on *:3000');
 });
