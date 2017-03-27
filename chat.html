@@ -39,7 +39,7 @@
         border: none;
         padding: 10px;
     }
-    
+        
     #messages {
         list-style-type: none;
         margin: 0;
@@ -53,12 +53,26 @@
     #messages li:nth-child(odd) {
         background: #eee;
     }
+    
+    #bc {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    #bc li {
+        padding: 5px 10px;
+        background-color: lightblue;
+        text-align: center;
+    } 
+      
     </style>
 </head>
 
 <body>
     <h1>Chat room</h1>
-    <ul id="messages"></ul>
+    <ul id="bc"></ul>
+    <ul id="messages"></ul> 
     <form action="">
         <input id="m" autocomplete="off" />
         <button>Send</button>
@@ -67,74 +81,26 @@
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
     var socket = io();
-    var like = [];
     var message = [];
-    var order = [];
-    var aaaa = -1;
+    var bc = [];
     $('form').submit(function() {
         socket.emit('chat message', $('#m').val());
         $('#m').val('');
         return false;
     });
-/*
-    socket.on('change',function(change){
-        var temp = order[change];
-        order[change]=order[change-1];
-        order[change-1]=temp;
-        console.log('change');
-        console.log(order);
+    socket.on('broadcast',function(bc){
+        var li = $('<li>');
+        var span = $('<span>').text(bc);
+        li.append(span);
+        $('#bc').append(li);
     });
-*/
+
     socket.on('chat message', function(msg) {
         message.push(msg);
-        like.push(0);
-        aaaa++;
-        order.push(aaaa);
         var li = $('<li>');
-        li.id = aaaa;
         var span = $('<span>').text(msg);
         li.append(span);
-        var btn = $('<button>').text(0);
-        btn.id = aaaa;
-        //console.log(btn.qwertyuio);
-        btn.click(function() {
-
-            socket.emit('like', btn.id);
-            like[btn.id]++;
-            //console.log(btn.id);
-            var recent=-1;
-            for(var i=0;i<order.length;i++){
-                if(order[i]==btn.id){
-                    recent=i;
-                    break;
-                }
-            }
-            /*while (like[order[recent]] > like[order[recent-1]] && recent > 0) {
-                console.log(order);
-                socket.emit('switch',recent);
-
-                socket.emit('change',recent);
-                console.log(order);
-                recent--;
-            }*/
-
-        });
-        console.log(order);
-        li.append(btn);
         $('#messages').append(li);
-    });
-/*
-    socket.on('switch',function(bbb){
-        var low_p = $("li:eq(" + order[bbb] + ")").offset().top;
-        var top_p = $("li:eq(" + order[bbb-1] + ")").offset().top;
-        $("li:eq(" + order[bbb-1] + ")").offset({top: low_p});
-        $("li:eq(" + order[bbb] + ")").offset({top: top_p});
-    });
-*/
-    socket.on('like', function(aaa) {
-        var like = parseInt($("button:eq(" + aaa + ")").text());
-        like++;
-        $("button:eq(" + aaa + ")").text(like);
     });
     </script>
 </body>
