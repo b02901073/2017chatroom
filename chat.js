@@ -1,9 +1,9 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var messages = [];
-var likes = [];
-var usercount = 0;
+var groupChat = [];
+var privateChat=[];
+var users = [];
 
 app.get('/', function(req, res) {
     res.sendfile('chat.html');
@@ -12,20 +12,91 @@ app.get('/', function(req, res) {
 http.listen(3000, function() {
     console.log('listening on *:3000');
 });
-
-io.on('connection', function(socket) {
-    console.log("a users connect");
-    io.emit('broadcast','Welcome to Ping Chat');
-    for (var i = 0; i < messages.length; i++) {
-        socket.emit('chat message', messages[i]);
+function checkUserOnline(username){
+  for(var i = 0; i < users.length; i++){
+    if(users[i].name === username){
+      if(users[i].online === true){
+        return 'online';
+      }
+      else {
+        return 'offline';
+      }
     }
-
-    socket.on('chat message', function(msg) {
-        io.emit('chat message', msg);
-        messages.push(msg);
+  }
+  return 'non';
+}
+function getUser(username){
+  for(var i = 0; i < users.length; i++){
+    if(users[i].name === username){
+      return users[i];
+    }
+  }
+  return false;
+}
+function emitBroadcast(msg){
+  var data = {
+    name : '',
+    rcv : '',
+    msg : msg,
+    broadcast : true
+  };
+  io.emit('group chat message', data);
+  groupChat.push(data);
+}
+io.on('connection', function(socket) {
+    var user = {
+      name:'',
+      online:false
+    };
+    for(var i = 0; i < groupChat.length ; i++){
+      socket.emit('group chat message',groupChat[i])
+    }
+    socket.on('add user',function(username){
+      if(checkUserOnline(username) === 'online'){
+        console.log(username + ' has been used.');
+        socket.emit('type name again');
+      } 
+      else if(checkUserOnline(username) === 'offline'){
+        console.log(username + ' is reconneted.');
+        emitBroadcast(username + '上線囉！');
+        user = getUser(username);
+        user.online = true;       
+      }
+      else{
+        console.log('new user : '+username+' has logged.');
+        emitBroadcast('歡迎新成員 : ' + username);
+        user.name = username;
+        user.online = true;
+        users.push(user);
+      }
     });
-
+    socket.on('group chat message', function(msg) {
+        console.log('Group chat : ' + user.name + ' ' + msg);
+        var data = {
+          name : user.name,
+          rcv : '',
+          msg : msg,
+          broadcast : false
+        };
+        groupChat.push(data);
+        io.emit('group chat message', data);
+    });
+    /*
+    socket.on('private chat message', function([rcv,msg]){
+        console.log(user.name+' to '+rcv+' : '+msg);
+        var data = {
+          name : user.name,
+          rcv : rcv,
+          msg : msg,
+          broadcast : false
+        };
+        privateChat.push(data);
+        io.emit('private chat message', data);
+    });
+    */
     socket.on('disconnect', function() {
-        console.log('user disconnected');
+        console.log(user.name + 'is disconnected.');
+        emitBroadcast(user.name + '已離開');
+        user.online = false;
     });
 });

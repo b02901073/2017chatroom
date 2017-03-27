@@ -4,6 +4,11 @@
 <head>
     <title>Ping chat</title>
     <style>
+    html {
+        min-height: 100%;
+        height: 100%;
+    }
+    
     * {
         margin: 0;
         padding: 0;
@@ -11,24 +16,24 @@
     }
     
     h1 {
-        text-align: center
+        text-align: left;
     }
     
     body {
+        min-height: 100%;
+        height: 100%;
         font: 13px Helvetica, Arial;
     }
     
     form {
-        background: #000;
-        padding: 3px;
-        position: fixed;
+        padding: 2px;
         bottom: 0;
         width: 100%;
     }
     
     form input {
         border: 0;
-        padding: 10px;
+        padding: 3px;
         width: 90%;
         margin-right: .5%;
     }
@@ -37,9 +42,14 @@
         width: 9%;
         background: rgb(130, 224, 255);
         border: none;
-        padding: 10px;
+        padding: 5px;
     }
-        
+    
+    #who {
+        text-align: center;
+        font-size: 30px;
+    }
+
     #messages {
         list-style-type: none;
         margin: 0;
@@ -48,6 +58,8 @@
     
     #messages li {
         padding: 5px 10px;
+        font-family: "Times New Roman", Georgia, Serif;
+        font-size: 18px;
     }
     
     #messages li:nth-child(odd) {
@@ -55,52 +67,182 @@
     }
     
     #bc {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
+        padding: 5px 10px;
+        font-family: "Times New Roman", Georgia, Serif;
+        font-size: 18px;
+        text-align: center;
     }
     
-    #bc li {
-        padding: 5px 10px;
-        background-color: lightblue;
+    #header {
+        height: 9%;
+    }
+    
+    #info {
+        height: 6%;
+    }
+    
+    #c-list {
+        float: left;
+        width: 20%;
+        height: 100%;
+        border-width: 1px 0 0 0;
+        border-style: solid;
+        border-color: lightgray;
+    }
+    
+    #c-name {
+        float: right;
+        width: 80%;
+        height: 100%;
+        border-width: 1px;
+        border-style: solid;
+        border-color: lightgray;
+    }
+    
+    #middle {
+        height: 85%;
+    }
+    
+    #sidebar {
+        float: left;
+        width: 20%;
+        height: 100%;
+        border-width: 1px;
+        border-style: solid;
+        border-color: lightgray;
+        position: fixed;
+        overflow: scroll;
+    }
+    
+    #s-msg {
+        height: 65px;
+        font-size: 25px;
+        width: 100%;
+    }
+    
+    #contact-top {
         text-align: center;
-    } 
-      
+        font-size: 30px;
+        font-family: "Times New Roman", Times, serif;
+    }
+    
+    #bodymessage {
+        float: right;
+        width: 80%;
+        height: 100%;
+        background-color: White;
+        overflow: scroll;
+    }
+    
+    #M {
+        padding-bottom: 30px;
+    }
+    
+    #S {
+        height: 30px;
+        width: 80%;
+        bottom: 0;
+        background: gray;
+        position: fixed;
+    }
     </style>
 </head>
 
 <body>
-    <h1>Chat room</h1>
-    <ul id="bc"></ul>
-    <ul id="messages"></ul> 
-    <form action="">
-        <input id="m" autocomplete="off" />
-        <button>Send</button>
-    </form>
+    <div id="header">
+        <h1>Chat room</h1>
+    </div>
+    <div id="info">
+        <div id="c-list">
+            <input type="search" value="Search">
+        </div>
+        <div id="c-name">
+            <p id="who"> Public</p>
+        </div>
+    </div>
+    <div id="middle">
+        <div id="sidebar">
+            <button id="s-msg"> Public </button>
+        </div>
+        <div id="bodymessage">
+            <div id="M">
+                <ul id="messages"></ul>
+            </div>
+            <div id="S">
+                <form action="">
+                    <input id="m" autocomplete="off" />
+                    <button>Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
     var socket = io();
     var message = [];
-    var bc = [];
+    var username;
+    var groupChat = [];
+    var users = [];
+    var privateChat = [];
+    var to_who = "public";
+
+    function login() {
+        username = prompt('請輸入你的名字 : ', '靖平小雞雞');
+        socket.emit('add user', username);
+        var data = {
+            name: '',
+            msg: 'Welcome to Ping Chat.',
+            broadcast: true
+        }
+    }
+
+    function addGroupChat(data) {
+        groupChat.push(data);
+        if (data.broadcast === true) { //群聊、broadcast
+            var li = $('<li>');
+            var span = $('<span>').text(data.msg);
+            li.append(span);
+            li.id = "bc";
+            $('#messages').append(li);
+        } else { //群聊、nonbroadcast
+            var msg = data.name + ' : ' + data.msg;
+            var li = $('<li>');
+            var span = $('<span>').text(msg);
+            li.append(span);
+            li.id = "nonbc";
+            $('#messages').append(li);
+        }
+        $("#bodymessage").scrollTop($("#bodymessage")[0].scrollHeight);
+    }
+
+    function addPrivateChat(data) {
+        if (username === data.name) { //私聊、自己傳給別人的訊息
+            privateChat.push(data);
+        } else if (username === data.rcv) { //私聊、別人傳給你的訊息
+            privateChat.push(data);
+        }
+    }
+    login();
+
     $('form').submit(function() {
-        socket.emit('chat message', $('#m').val());
-        $('#m').val('');
-        return false;
-    });
-    socket.on('broadcast',function(bc){
-        var li = $('<li>');
-        var span = $('<span>').text(bc);
-        li.append(span);
-        $('#bc').append(li);
+        if (to_who === "public") {
+            socket.emit('group chat message', $('#m').val());
+            $('#m').val('');
+            return false;
+        }
     });
 
-    socket.on('chat message', function(msg) {
-        message.push(msg);
-        var li = $('<li>');
-        var span = $('<span>').text(msg);
-        li.append(span);
-        $('#messages').append(li);
+    socket.on('type name again', function() {
+        username = prompt('你的名字已被使用！請輸入別的名字: ',
+            '澳門首家線上賭場');
+        socket.emit('add user', username);
+    });
+    socket.on('group chat message', function(data) {
+        addGroupChat(data);
+    });
+    socket.on('private chat message', function(data) {
+        addPrivateChat(data);
     });
     </script>
 </body>
