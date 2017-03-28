@@ -3,177 +3,34 @@
 
 <head>
     <title>Ping chat</title>
-    <style>
-    html {
-        min-height: 100%;
-        height: 100%;
-    }
-    
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
-    h1 {
-        text-align: left;
-    }
-    
-    body {
-        min-height: 100%;
-        height: 100%;
-        font: 13px Helvetica, Arial;
-    }
-    
-    form {
-        padding: 2px;
-        bottom: 0;
-        width: 100%;
-    }
-    
-    form input {
-        border: 0;
-        padding: 3px;
-        width: 90%;
-        margin-right: .5%;
-    }
-    
-    form button {
-        width: 9%;
-        background: rgb(130, 224, 255);
-        border: none;
-        padding: 5px;
-    }
-    
-    #who {
-        text-align: center;
-        font-size: 30px;
-    }
-    
-    #messages {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-    }
-    
-    #messages li {
-        padding: 5px 10px;
-        font-family: "Times New Roman", Georgia, Serif;
-        font-size: 18px;
-    }
-    
-    #messages li:nth-child(odd) {
-        background: #eee;
-    }
-    
-    #me {
-        text-align: right;
-    }
-    
-    #friend {
-        text-align: left;
-    }
-    
-    #bc {
-        padding: 5px 10px;
-        font-family: "Times New Roman", Georgia, Serif;
-        font-size: 18px;
-        text-align: center;
-    }
-    
-    #header {
-        height: 9%;
-    }
-    
-    #info {
-        height: 6%;
-    }
-    
-    #c-list {
-        float: left;
-        width: 20%;
-        height: 100%;
-        border-width: 1px 0 0 0;
-        border-style: solid;
-        border-color: lightgray;
-    }
-    
-    #c-name {
-        float: right;
-        width: 80%;
-        height: 100%;
-        border-width: 1px;
-        border-style: solid;
-        border-color: lightgray;
-    }
-    
-    #middle {
-        height: 85%;
-    }
-    
-    #sidebar {
-        float: left;
-        width: 20%;
-        height: 100%;
-        border-width: 1px;
-        border-style: solid;
-        border-color: lightgray;
-        position: fixed;
-        overflow: scroll;
-    }
-    
-    #sidebar div {
-        height: 65px;
-        font-size: 25px;
-        width: 100%;
-        border-width: 0 0 1px 0;
-        border-style: solid;
-        border-color: lightgray;
-    }
-    
-    #sidebar button {
-        border-radius: 12px;
-        height: 65px;
-        font-size: 25px;
-        float: right;
-        width: 80%;
-    }
-    
-    #contact-top {
-        text-align: center;
-        font-size: 30px;
-        font-family: "Times New Roman", Times, serif;
-    }
-    
-    #bodymessage {
-        float: right;
-        width: 80%;
-        height: 100%;
-        background-color: White;
-        overflow: scroll;
-    }
-    
-    #M {
-        padding-bottom: 30px;
-    }
-    
-    #S {
-        height: 30px;
-        width: 80%;
-        bottom: 0;
-        background: gray;
-        position: fixed;
-    }
-    </style>
+    <link rel="stylesheet" type="text/css" href="chat.css" />
 </head>
 
 <body>
     <div id="header">
-        <h1>Chat room</h1>
+        <div id="top1">
+            <img src="sakura.jpg" alt="Smiley face" height=100%>
+        </div>
+        <div id="top1">
+            <img src="chat-name.png" alt="Smiley face" height=70%>
+        </div>
+        <div id="top2">
+            <form>
+                <select>
+                    <option value="ch">Chinese</option>
+                    <option value="en">English</option>
+                    <option value="jp">Japanese</option>
+                    <option value="fr">French</option>
+                </select>
+            </form>
+        </div>
+        <div id="top3">
+            <h2 id="hello"></h2>
+        </div>
     </div>
     <div id="info">
         <div id="c-list">
-            <input type="search" value="Search">
+            <h2> Friends </h2>
         </div>
         <div id="c-name">
             <p id="who"> Public</p>
@@ -181,8 +38,8 @@
     </div>
     <div id="middle">
         <div id="sidebar">
-            <div>
-                <button id="public" onclick="clicked(this.id)"> Public </button>
+            <div class="smg">
+                <button id="public" onclick="clicked(this.id)"> <span>Public</span> </button>
             </div>
         </div>
         <div id="bodymessage">
@@ -211,17 +68,19 @@
     function login() {
         username = prompt('請輸入你的名字 : ', '靖平小雞雞');
         socket.emit('add user', username);
+        document.getElementById("hello").innerHTML = "Hello, " + username + "";
     }
 
     function addGroupChat(data) {
         if (data.broadcast === true) { //群聊、broadcast
-            var li = $('<li>');
+            var li = $('<li id="bc"/>');
             var span = $('<span>').text(data.msg);
             li.append(span);
             $('#messages').append(li);
         } else { //群聊、nonbroadcast
+            var id = data.name === username ? "me" : "friend";
             var msg = data.name + ' : ' + data.msg;
-            var li = $('<li>');
+            var li = $('<li id="' + id + '"/>');
             var span = $('<span>').text(msg);
             li.append(span);
             $('#messages').append(li);
@@ -244,6 +103,7 @@
         console.log("clicked : " + name);
         if (nowpage != name) {
             nowpage = name;
+            document.getElementById("who").innerHTML = nowpage;
             $('#messages').empty();
             if (nowpage === "public") {
                 for (var i = 0; i < groupChat.length; i++)
@@ -276,7 +136,7 @@
 
     socket.on('show private user', function(user) {
         if (user.name != username) {
-            var d = $('<div>');
+            var d = $('<div class="smg"/>');
             var r = $('<button id="' + user.name + '" onclick="clicked(this.id)"/>');
             var span = $('<span>').text(user.name);
             r.append(span);
@@ -289,7 +149,7 @@
         username = prompt('你的名字已被使用！請輸入別的名字: ',
             '澳門首家線上賭場');
         socket.emit('add user', username);
-        console.log("i am : " + username);
+        document.getElementById("hello").innerHTML = "Hello, " + username + "";
     });
     socket.on('group chat message', function(data) {
         groupChat.push(data);

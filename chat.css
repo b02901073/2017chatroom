@@ -10,6 +10,10 @@ html {
 }
 
 h1 {
+    text-align: left;
+}
+
+h2 {
     text-align: center;
 }
 
@@ -20,7 +24,7 @@ body {
 }
 
 form {
-    padding: 1px;
+    padding: 2px;
     bottom: 0;
     width: 100%;
 }
@@ -28,7 +32,7 @@ form {
 form input {
     border: 0;
     padding: 3px;
-    width: 89%;
+    width: 90%;
     margin-right: .5%;
 }
 
@@ -37,6 +41,45 @@ form button {
     background: rgb(130, 224, 255);
     border: none;
     padding: 5px;
+}
+
+button {
+    outline: none;
+}
+
+#top1 {
+    height: 100%;
+    float: left;
+}
+
+#top2 {
+    height: 100%;
+    float: right;
+    padding: 25px 0 0 0;
+}
+
+select {
+    width: 100%;
+    padding: 6px 20px;
+    border: none;
+    border-radius: 4px;
+    background-color: #f1f1f1;
+}
+
+#top3 {
+    height: 100%;
+    float: right;
+    padding-right: 30px;
+}
+
+#hello {
+    padding-top: 25px;
+}
+
+#who {
+    text-align: center;
+    font-size: 28px;
+    font-family: "KaiTi";
 }
 
 #messages {
@@ -51,38 +94,130 @@ form button {
     font-size: 18px;
 }
 
-#messages li:nth-child(odd) {
-    background: #eee;
+#me {
+    text-align: right;
+}
+
+#me span {
+    background: lightblue;
+    border-radius: 12px;
+    padding: 3px 10px;
+}
+
+#friend {
+    text-align: left;
+}
+
+#friend span {
+    background: #CCBBFF;
+    border-radius: 12px;
+    padding: 3px 10px;
 }
 
 #bc {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
+    padding: 5px 10px;
+    font-family: "Times New Roman", Georgia, Serif;
+    font-size: 18px;
+    text-align: center;
+    background: #FFBB00;
+    border-radius: 12px;
 }
 
-#bc li {
-    padding: 5px 10px;
-    background-color: lightblue;
-    text-align: center;
+#bc:nth-child(odd) {
+    background: #eee;
 }
 
 #header {
-    height: 10%;
+    height: 9%;
 }
 
-#middle {
-    height: 90%;
+#info {
+    height: 6%;
 }
 
-#sidebar {
+#c-list {
+    float: left;
+    width: 20%;
+    height: 100%;
+    border-width: 1px 0 0 0;
+    border-style: solid;
+    border-color: lightgray;
+}
+
+#c-name {
+    float: right;
+    width: 80%;
     height: 100%;
     border-width: 1px;
     border-style: solid;
-    border-color: gray;
-    position: fixed;
+    border-color: lightgray;
+}
+
+#middle {
+    height: 85%;
+}
+
+#sidebar {
     float: left;
     width: 20%;
+    height: 100%;
+    border-width: 1px;
+    border-style: solid;
+    border-color: lightgray;
+    position: fixed;
+    overflow: scroll;
+}
+
+#sidebar div {
+    height: 65px;
+    font-size: 25px;
+    width: 100%;
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: lightgray;
+}
+
+#sidebar button {
+    background: transparent;
+    border-width: 0;
+    height: 65px;
+    font-size: 25px;
+    float: right;
+    width: 100%;
+}
+
+.smg {
+    transition-duration: 0.4s;
+}
+
+.smg:hover {
+    background-color: #FFFFBB;
+    color: white;
+}
+
+.smg span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+}
+
+.smg span:after {
+    content: '\00bb';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -20px;
+    transition: 0.5s;
+}
+
+.smg:hover span {
+    padding-right: 25px;
+}
+
+.smg:hover span:after {
+    opacity: 1;
+    right: 0;
 }
 
 #contact-top {
@@ -93,9 +228,10 @@ form button {
 
 #bodymessage {
     float: right;
-    background-color: White;
     width: 80%;
     height: 100%;
+    background-color: White;
+    overflow: scroll;
 }
 
 #M {

@@ -5,6 +5,17 @@ var groupChat = [];
 var privateChat = [];
 var users = [];
 
+var i18n = require("i18n");
+i18n.configure({
+    locales: ['ch', 'en', 'jp', 'fr'],
+    directory: __dirname + '/locales'
+});
+i18n.setLocale('ch');
+
+var express = require('express');
+var path = require('path');
+app.use(express.static(__dirname, 'public'));
+
 app.get('/', function(req, res) {
     res.sendfile('chat.html');
 });
@@ -56,6 +67,10 @@ io.on('connection', function(socket) {
 
     for (var i = 0; i < groupChat.length; i++) {
         socket.emit('group chat message', groupChat[i])
+    }
+
+    for (var i = 0; i < privateChat.length; i++) {
+        socket.emit('private chat message', privateChat[i])
     }
 
     socket.on('add user', function(username) {
