@@ -2,7 +2,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var groupChat = [];
-var privateChat=[];
+var privateChat = [];
 var users = [];
 
 app.get('/', function(req, res) {
@@ -12,88 +12,107 @@ app.get('/', function(req, res) {
 http.listen(3000, function() {
     console.log('listening on *:3000');
 });
-function checkUserOnline(username){
-  for(var i = 0; i < users.length; i++){
-    if(users[i].name === username){
-      if(users[i].online === true){
-        return 'online';
-      }
-      else {
-        return 'offline';
-      }
+
+function checkUserOnline(username) {
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].name === username) {
+            if (users[i].online === true) {
+                return 'online';
+            } else {
+                return 'offline';
+            }
+        }
     }
-  }
-  return 'non';
+    return 'non';
 }
-function getUser(username){
-  for(var i = 0; i < users.length; i++){
-    if(users[i].name === username){
-      return users[i];
+
+function getUser(username) {
+    for (var i = 0; i < users.length; i++) {
+        if (users[i].name === username) {
+            return users[i];
+        }
     }
-  }
-  return false;
+    return false;
 }
-function emitBroadcast(msg){
-  var data = {
-    name : '',
-    rcv : '',
-    msg : msg,
-    broadcast : true
-  };
-  io.emit('group chat message', data);
-  groupChat.push(data);
+
+function emitBroadcast(msg) {
+    var data = {
+        name: '',
+        rcv: '',
+        msg: msg,
+        broadcast: true
+    };
+    io.emit('group chat message', data);
+    groupChat.push(data);
 }
+
 io.on('connection', function(socket) {
     var user = {
-      name:'',
-      online:false
+        name: '',
+        online: false
     };
-    for(var i = 0; i < groupChat.length ; i++){
-      socket.emit('group chat message',groupChat[i])
+
+    console.log("total users: " + users.length);
+
+    for (var i = 0; i < groupChat.length; i++) {
+        socket.emit('group chat message', groupChat[i])
     }
-    socket.on('add user',function(username){
-      if(checkUserOnline(username) === 'online'){
-        console.log(username + ' has been used.');
-        socket.emit('type name again');
-      } 
-      else if(checkUserOnline(username) === 'offline'){
-        console.log(username + ' is reconneted.');
-        emitBroadcast(username + '上線囉！');
-        user = getUser(username);
-        user.online = true;       
-      }
-      else{
-        console.log('new user : '+username+' has logged.');
-        emitBroadcast('歡迎新成員 : ' + username);
-        user.name = username;
-        user.online = true;
-        users.push(user);
-      }
+
+    socket.on('add user', function(username) {
+        if (checkUserOnline(username) === 'online') {
+            console.log(username + ' has been used.');
+            socket.emit('type name again');
+        } else if (checkUserOnline(username) === 'offline') {
+            console.log(username + ' is reconneted.');
+            emitBroadcast(username + '上線囉！');
+            user = getUser(username);
+            user.online = true;
+
+            // add user button at left
+            for (var i = 0; i < users.length; i++) {
+                socket.emit('show private user', users[i]);
+            }
+
+        } else {
+            console.log('new user : ' + username + ' has logged.');
+            emitBroadcast('歡迎新成員 : ' + username);
+            user.name = username;
+            user.online = true;
+            users.push(user);
+            // add user button at left to everybody
+            io.emit('show private user', user);
+
+            // add user button at left
+            for (var i = 0; i < users.length; i++) {
+                socket.emit('show private user', users[i]);
+            }
+
+        }
     });
     socket.on('group chat message', function(msg) {
         console.log('Group chat : ' + user.name + ' ' + msg);
         var data = {
-          name : user.name,
-          rcv : '',
-          msg : msg,
-          broadcast : false
+            name: user.name,
+            rcv: '',
+            msg: msg,
+            broadcast: false
         };
         groupChat.push(data);
         io.emit('group chat message', data);
     });
-    /*
-    socket.on('private chat message', function([rcv,msg]){
-        console.log(user.name+' to '+rcv+' : '+msg);
+
+    socket.on('private chat message', function(rcv, msg) {
+        console.log(user.name + ' to ' + rcv + ' : ' + msg);
         var data = {
-          name : user.name,
-          rcv : rcv,
-          msg : msg,
-          broadcast : false
+            name: user.name, //name is sender
+            rcv: rcv,
+            msg: msg,
+            broadcast: false
         };
         privateChat.push(data);
         io.emit('private chat message', data);
     });
-    */
+
     socket.on('disconnect', function() {
         console.log(user.name + 'is disconnected.');
         emitBroadcast(user.name + '已離開');

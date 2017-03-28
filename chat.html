@@ -49,7 +49,7 @@
         text-align: center;
         font-size: 30px;
     }
-
+    
     #messages {
         list-style-type: none;
         margin: 0;
@@ -64,6 +64,14 @@
     
     #messages li:nth-child(odd) {
         background: #eee;
+    }
+    
+    #me {
+        text-align: right;
+    }
+    
+    #friend {
+        text-align: left;
     }
     
     #bc {
@@ -114,10 +122,21 @@
         overflow: scroll;
     }
     
-    #s-msg {
+    #sidebar div {
         height: 65px;
         font-size: 25px;
         width: 100%;
+        border-width: 0 0 1px 0;
+        border-style: solid;
+        border-color: lightgray;
+    }
+    
+    #sidebar button {
+        border-radius: 12px;
+        height: 65px;
+        font-size: 25px;
+        float: right;
+        width: 80%;
     }
     
     #contact-top {
@@ -162,7 +181,9 @@
     </div>
     <div id="middle">
         <div id="sidebar">
-            <button id="s-msg"> Public </button>
+            <div>
+                <button id="public" onclick="clicked(this.id)"> Public </button>
+            </div>
         </div>
         <div id="bodymessage">
             <div id="M">
@@ -185,51 +206,82 @@
     var groupChat = [];
     var users = [];
     var privateChat = [];
-    var to_who = "public";
+    var nowpage = "public";
 
     function login() {
         username = prompt('請輸入你的名字 : ', '靖平小雞雞');
         socket.emit('add user', username);
-        var data = {
-            name: '',
-            msg: 'Welcome to Ping Chat.',
-            broadcast: true
-        }
     }
 
     function addGroupChat(data) {
-        groupChat.push(data);
         if (data.broadcast === true) { //群聊、broadcast
             var li = $('<li>');
             var span = $('<span>').text(data.msg);
             li.append(span);
-            li.id = "bc";
             $('#messages').append(li);
         } else { //群聊、nonbroadcast
             var msg = data.name + ' : ' + data.msg;
             var li = $('<li>');
             var span = $('<span>').text(msg);
             li.append(span);
-            li.id = "nonbc";
             $('#messages').append(li);
         }
         $("#bodymessage").scrollTop($("#bodymessage")[0].scrollHeight);
     }
 
     function addPrivateChat(data) {
-        if (username === data.name) { //私聊、自己傳給別人的訊息
-            privateChat.push(data);
-        } else if (username === data.rcv) { //私聊、別人傳給你的訊息
-            privateChat.push(data);
+        var id = data.name === username ? "me" : "friend";
+        console.log(id);
+        var li = $('<li id="' + id + '"/>');
+        var span = $('<span>').text(data.msg);
+        li.append(span);
+        $('#messages').append(li);
+
+        $("#bodymessage").scrollTop($("#bodymessage")[0].scrollHeight);
+    }
+
+    function clicked(name) {
+        console.log("clicked : " + name);
+        if (nowpage != name) {
+            nowpage = name;
+            $('#messages').empty();
+            if (nowpage === "public") {
+                for (var i = 0; i < groupChat.length; i++)
+                    addGroupChat(groupChat[i]);
+            } else {
+                for (var i = 0; i < privateChat.length; i++) {
+                    if (privateChat[i].name === nowpage)
+                        addPrivateChat(privateChat[i]);
+                    else if (privateChat[i].rcv === nowpage)
+                        addPrivateChat(privateChat[i]);
+                }
+            }
         }
     }
+
     login();
 
     $('form').submit(function() {
-        if (to_who === "public") {
+        if (nowpage === "public") {
             socket.emit('group chat message', $('#m').val());
             $('#m').val('');
             return false;
+        } else {
+            socket.emit('private chat message', nowpage, $('#m').val());
+            $('#m').val('');
+            return false;
+
+        }
+    });
+
+    socket.on('show private user', function(user) {
+        if (user.name != username) {
+            var d = $('<div>');
+            var r = $('<button id="' + user.name + '" onclick="clicked(this.id)"/>');
+            var span = $('<span>').text(user.name);
+            r.append(span);
+            d.append(r);
+            $("#sidebar").append(d);
         }
     });
 
@@ -237,12 +289,24 @@
         username = prompt('你的名字已被使用！請輸入別的名字: ',
             '澳門首家線上賭場');
         socket.emit('add user', username);
+        console.log("i am : " + username);
     });
     socket.on('group chat message', function(data) {
-        addGroupChat(data);
+        groupChat.push(data);
+        if (nowpage === "public") {
+            addGroupChat(data);
+        }
     });
     socket.on('private chat message', function(data) {
-        addPrivateChat(data);
+        if (username === data.name) { //私聊、自己傳給別人的訊息
+            privateChat.push(data);
+            if (nowpage === data.rcv)
+                addPrivateChat(data);
+        } else if (username === data.rcv) { //私聊、別人傳給你的訊息
+            privateChat.push(data);
+            if (nowpage === data.name)
+                addPrivateChat(data);
+        }
     });
     </script>
 </body>
