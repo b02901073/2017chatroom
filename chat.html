@@ -154,10 +154,12 @@
     });
 
     socket.on('a user disconnect', function(name) {
-        document.getElementById('_'+name).src = "offline.jpg";
+        if (name != username)
+            document.getElementById('_' + name).src = "offline.jpg";
     });
     socket.on('a user reconnect', function(name) {
-        document.getElementById('_'+name).src = "online.jpg";
+        if (name != username)
+            document.getElementById('_' + name).src = "online.jpg";
     });
 
     socket.on('type name again', function() {
