@@ -136,13 +136,28 @@
 
     socket.on('show private user', function(user) {
         if (user.name != username) {
+            console.log(user.name + " is " + user.online);
             var d = $('<div class="smg"/>');
             var r = $('<button id="' + user.name + '" onclick="clicked(this.id)"/>');
             var span = $('<span>').text(user.name);
+            if (user.online == true) {
+                var img = $('<img src="online.jpg" height="15px" float="left" id="_' + user.name + '"/>');
+                r.append(img);
+            } else {
+                var img = $('<img src="offline.jpg" height="15px" float="left" id="_' + user.name + '"/>');
+                r.append(img);
+            }
             r.append(span);
             d.append(r);
             $("#sidebar").append(d);
         }
+    });
+
+    socket.on('a user disconnect', function(name) {
+        document.getElementById('_'+name).src = "offline.jpg";
+    });
+    socket.on('a user reconnect', function(name) {
+        document.getElementById('_'+name).src = "online.jpg";
     });
 
     socket.on('type name again', function() {

@@ -87,6 +87,7 @@ io.on('connection', function(socket) {
             for (var i = 0; i < users.length; i++) {
                 socket.emit('show private user', users[i]);
             }
+            io.emit('a user reconnect',user.name);
 
         } else {
             console.log('new user : ' + username + ' has logged.');
@@ -132,5 +133,6 @@ io.on('connection', function(socket) {
         console.log(user.name + 'is disconnected.');
         emitBroadcast(user.name + '已離開');
         user.online = false;
+        io.emit('a user disconnect',user.name);
     });
 });
