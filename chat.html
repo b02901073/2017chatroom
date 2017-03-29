@@ -30,7 +30,7 @@
     </div>
     <div id="info">
         <div id="c-list">
-            <h2> Friends </h2>
+            <p id="fr"> ---朋友列表--- </p>
         </div>
         <div id="c-name">
             <p id="who"> Public</p>
@@ -68,7 +68,7 @@
     function login() {
         username = prompt('請輸入你的名字 : ', '靖平小雞雞');
         socket.emit('add user', username);
-        document.getElementById("hello").innerHTML = "Hello, " + username + "";
+        document.getElementById("hello").innerHTML = "您好, " + username + "";
     }
 
     function addGroupChat(data) {
